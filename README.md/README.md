@@ -1,223 +1,166 @@
-# Air Quality Analysis using R
+<div align="center">
 
-An end-to-end Data Science project using R to analyze air quality data investigate relationships between variables, detect anomalies and build predictive models for ozone concentration.
+<img src="https://img.shields.io/badge/Language-R-276DC3?style=for-the-badge&logo=r&logoColor=white" />
+<img src="https://img.shields.io/badge/Dataset-airquality%20(built--in)-orange?style=for-the-badge" />
+<img src="https://img.shields.io/badge/Status-Complete-brightgreen?style=for-the-badge" />
+<img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" />
+
+# 🌫️ Air Quality Analysis using R
+
+**An end-to-end Data Science project** — from raw environmental data to predictive modeling of ozone concentration.
+
+*Exploring R's statistical ecosystem to uncover what drives air pollution.*
+
+</div>
 
 ---
 
 ## 📌 Project Overview
 
-This project uses Rs built-in airquality dataset to perform a Data Science workflow:
+This project uses R's built-in `airquality` dataset to perform a complete Data Science workflow on air quality measurements recorded in New York from **May to September 1973**.
 
-Data Understanding → Data Quality → Data Cleaning → EDA → Statistical Analysis → Time Analysis → Anomaly Detection → Feature Engineering → Modeling → Model Evaluation
+The primary goal is to understand which environmental factors influence ozone concentration and build predictive models to estimate ozone levels.
 
-The main goal is to understand which environmental factors are related to ozone concentration and evaluate how well ozone levels can be predicted using statistical models.
+### Workflow Pipeline
+
+```
+Data Understanding → Data Quality → Data Cleaning → EDA → Statistical Analysis
+    → Time Analysis → Anomaly Detection → Feature Engineering → Modeling → Evaluation
+```
 
 ---
 
 ## 🎯 Objectives
 
-- Understand the air quality dataset
-
-- Identify. Handle missing values
-
-- Explore the distribution of ozone concentration
-
-- Analyze relationships between ozone and environmental variables
-
+- Understand and explore the air quality dataset structure
+- Identify and handle missing values through imputation
+- Analyze distributions and relationships between environmental variables
 - Perform correlation and multiple linear regression analysis
-
-- Analyze the time dimension of the data
-
-- Detect unusual ozone observations
-
-- Create a meaningful interaction feature
-
-- Build predictive models
-
-- Compare model performance using MAE, RMSE and R²
-
-- Create a reproducible R Markdown report
+- Detect anomalous ozone observations using the IQR method
+- Engineer meaningful interaction features
+- Build and compare predictive models using MAE, RMSE, and R²
+- Generate a reproducible R Markdown report
 
 ---
 
 ## 📊 Dataset
 
-The project uses Rs built-in airquality dataset.
+R's built-in `airquality` dataset — **153 daily observations** of air quality in New York, May–September 1973.
 
-The dataset contains air quality measurements in New York from May to September 1973.
-
-### Variables
-
-| Variable | Description |
-
-|---|---|
-
-| Ozone | Ozone concentration |
-
-| Solar.R | Solar radiation |
-
-| Wind | Wind speed |
-
-| Temp | Temperature |
-
-| Month | Month |
-
-| Day | Day of the month |
+| Variable | Description | Unit |
+|----------|-------------|------|
+| `Ozone` | Ozone concentration *(target variable)* | ppb |
+| `Solar.R` | Solar radiation | lang |
+| `Wind` | Wind speed | mph |
+| `Temp` | Temperature | °F |
+| `Month` | Month of observation | 5–9 |
+| `Day` | Day of the month | 1–31 |
 
 ---
 
-## 🛠️ Technologies Used
+## 📈 Key Findings
 
-- R
+| Finding | Detail |
+|---------|--------|
+| 🌡️ Temperature | Strong **positive** correlation with ozone (r = **0.60**) |
+| 💨 Wind | Strong **negative** correlation with ozone (r = **−0.53**) |
+| ☀️ Solar Radiation | Moderate **positive** correlation with ozone (r = **0.30**) |
+| 🚨 Anomaly Threshold | IQR upper boundary at **83.5 ppb** |
+| ⚠️ Max Ozone Observed | **168 ppb** — significantly above threshold |
+| 🏆 Best Model | Model 2 — with engineered `Temp × Wind` interaction feature |
 
-- RStudio
+---
 
-- R Markdown
+## 🤖 Model Performance
 
-- Base R
+Two linear regression models were developed and compared:
 
-- modeling
+| Metric | Model 1 | Model 2 | Winner |
+|--------|---------|---------|--------|
+| **Features** | Temp + Wind + Solar.R | Temp + Wind + Solar.R + Temp×Wind | — |
+| **MAE** | 14.38 | 13.69 | ✅ Model 2 |
+| **RMSE** | 20.29 | 18.90 | ✅ Model 2 |
+| **R²** | 0.523 | 0.586 | ✅ Model 2 |
 
-- Data visualization
+> Model 2 outperformed Model 1 across all three metrics after adding the engineered `Temp_Wind` interaction feature.
 
 ---
 
 ## 🔬 Project Workflow
 
-### 1. Data Understanding
+<details>
+<summary><b>1. Data Understanding</b></summary>
+<br>
+Investigated dataset dimensions, variable names, data types, and summary statistics to understand the full structure before any analysis.
+</details>
 
-The dataset was investigated using:
+<details>
+<summary><b>2. Data Quality Check</b></summary>
+<br>
+Checked for missing values, complete cases, data consistency, and potential outliers across all variables.
+</details>
 
-- Number of observations
+<details>
+<summary><b>3. Data Cleaning</b></summary>
+<br>
+Missing values in <code>Ozone</code> and <code>Solar.R</code> were handled using <strong>imputation</strong>. The cleaned dataset was stored separately to preserve the original untouched data.
+</details>
 
-- Number of variables
+<details>
+<summary><b>4. Exploratory Data Analysis (EDA)</b></summary>
+<br>
+Explored ozone distribution, outlier patterns, and pairwise relationships between ozone and: Temperature, Wind, and Solar Radiation.
+</details>
 
-- names
+<details>
+<summary><b>5. Statistical Analysis</b></summary>
+<br>
+Performed full correlation analysis and developed a multiple linear regression model using Temperature, Wind, and Solar Radiation as predictors.
+</details>
 
-- Data types
+<details>
+<summary><b>6. Time Analysis</b></summary>
+<br>
+Investigated ozone observations using time-based visualizations, moving averages, and autocorrelation (ACF). Note: yearly forecasting was not a valid objective as the dataset only spans May–September 1973.
+</details>
 
-- Summary statistics
+<details>
+<summary><b>7. Anomaly Detection</b></summary>
+<br>
+Applied the <strong>IQR method</strong> to identify unusual ozone observations. The upper IQR boundary was ~83.5 ppb; the maximum observed value was 168 ppb.
+</details>
 
-- Missing-value investigation
+<details>
+<summary><b>8. Feature Engineering</b></summary>
+<br>
+Created a meaningful interaction feature: <code>Temp_Wind = Temp × Wind</code>, capturing the combined atmospheric effect on ozone concentration.
+</details>
 
-### 2. Data Quality
+<details>
+<summary><b>9–10. Modeling & Evaluation</b></summary>
+<br>
+Built and evaluated two linear regression models using MAE, RMSE, and R². Model 2 (with the interaction term) performed better across all three metrics.
+</details>
 
-The project checked:
+---
 
-- Missing values
+## 🛠️ Technologies Used
 
-- Complete cases
+| Tool | Purpose |
+|------|---------|
+| **R 4.x** | Core programming language |
+| **ggplot2** | Data visualization |
+| **dplyr** | Data manipulation |
+| **stats (Base R)** | Linear regression, correlation, ACF |
+| **R Markdown** | Reproducible HTML report generation |
+| **RStudio** | Development environment |
 
-- Data consistency
+---
 
-- outliers
-
-### 3. Data Cleaning
-
-Missing values in Ozone and Solar.R were handled using imputation.
-
-The cleaned dataset was stored separately so that the original data remained unchanged.
-
-### 4. Exploratory Data Analysis
-
-The project explored:
-
-- Ozone distribution
-
-- Ozone outliers
-
-- Ozone vs Temperature
-
-- Ozone vs Wind
-
-- Ozone, vs Solar Radiation
-
-### 5. Statistical Analysis
-
-Correlation analysis showed:
-
-- Ozone and Temperature: 0.6008
-
-- Ozone and Wind: -0.5319
-
-- Ozone and Solar Radiation: 0.2955
-
-A multiple linear regression model was also developed using:
-
-- Temperature
-
-- Wind
-
-- Solar Radiation
-
-### 6. Time Analysis
-
-The project investigated the ozone observations using:
-
-- Time-based visualization
-
-- Moving averages
-
-- Autocorrelation (ACF)
-
-The dataset only covers May–September 1973 so term yearly forecasting was not treated as a valid objective.
-
-### 7. Anomaly Detection
-
-The IQR method was used to identify ozone observations.
-
-The upper IQR boundary was approximately:
-
-83.5 ppb
-
-The highest observed ozone value was:
-
-168 ppb
-
-### 8. Feature Engineering
-
-A meaningful interaction feature was created:
-
-```r
-
-Temp_Wind = Temp × Wind
+## 📁 Project Structure
 
 ```
-9. Predictive Modeling
-
-Two linear regression models were developed.
-
-Model 1
-
-Ozone ~ Temp + Wind + Solar.R
-
-Model 2
-
-Ozone ~ Temp + Wind + Solar.R + Temp_Wind
-10. Model Evaluation
-
-The models were evaluated using:
-
-MAE
-RMSE
-R²
-Model	MAE	RMSE	R²
-Model 1	14.38	20.29	0.523
-Model 2	13.69	18.90	0.586
-
-Model 2 performed better across all three evaluation metrics.
-
-📈 Key Findings
-Temperature has a strong positive relationship with ozone concentration.
-Wind has a negative relationship with ozone concentration.
-Solar radiation has a weaker positive relationship with ozone.
-Several unusually high ozone observations were detected.
-Adding the Temp_Wind interaction feature improved model performance.
-Model 2 achieved better MAE, RMSE, and R² than Model 1.
-
-
-📁 Project Structure
-AirQuality-Analysis_project/
+AirQuality-Analysis-R/
 │
 ├── R/
 │   ├── 01_data_understanding.R
@@ -237,3 +180,53 @@ AirQuality-Analysis_project/
 │
 ├── README.md
 └── AirQuality-Analysis_project.Rproj
+```
+
+---
+
+## 🚀 How to Run
+
+**1. Clone the repository**
+```bash
+git clone https://github.com/showmick-roy/AirQuality-Analysis-R.git
+cd AirQuality-Analysis-R
+```
+
+**2. Open in RStudio**
+```
+Open → AirQuality-Analysis_project.Rproj
+```
+
+**3. Install required packages**
+```r
+install.packages(c("ggplot2", "dplyr", "rmarkdown"))
+```
+
+**4. Run scripts in order**
+```
+R/01_data_understanding.R  →  ...  →  R/10_model_evaluation.R
+```
+
+**5. Generate the full report**
+```r
+rmarkdown::render("reports/air_quality_report.Rmd")
+```
+
+---
+
+## 👤 Author
+
+**Showmick Roy**  
+AI & Data Science Student | Green University of Bangladesh
+
+[![GitHub](https://img.shields.io/badge/GitHub-showmick--roy-181717?style=flat-square&logo=github)](https://github.com/showmick-roy)
+
+---
+
+<div align="center">
+
+⭐ **If you found this project helpful, please consider starring the repository!**
+
+*Built with R and a passion for environmental data science.*
+
+</div>
