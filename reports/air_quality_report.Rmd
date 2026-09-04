@@ -1,0 +1,1051 @@
+---
+title: "Air Quality Analysis"
+output: html_document
+date: "2026-08-30"
+---
+
+# Introduction
+
+## Project Overview
+
+Air quality is an important environmental factor that can affect human health and the environment. This project analyzes air quality measurements using R and the built-in `airquality` dataset.
+
+The project follows a complete data science workflow:
+
+**Data Understanding → Data Quality → Data Cleaning → Exploratory Data Analysis → Statistical Analysis → Time Analysis → Anomaly Detection → Feature Engineering → Modeling → Model Evaluation → Conclusion**
+
+## Project Objective
+
+The main objective of this project is to investigate the relationship between ozone concentration and environmental variables such as temperature, wind speed, and solar radiation.
+
+The project also aims to:
+
+- identify missing values and data-quality issues;
+
+- clean the dataset;
+
+- explore important patterns and relationships;
+
+- identify unusual ozone observations;
+
+- create meaningful features;
+
+- develop prediction models;
+
+- compare model performance using evaluation metrics.
+
+# Dataset
+
+The project uses R's built-in `airquality` dataset.
+
+The dataset contains daily air-quality measurements collected in New York during May to September 1973.
+
+## Variables
+
+| Variable | Description          | Type    |
+|----------|----------------------|---------|
+| Ozone    | Ozone concentration  | Numeric |
+| Solar.R  | Solar radiation      | Numeric |
+| Wind     | Wind speed           | Numeric |
+| Temp     | Temperature          | Numeric |
+| Month    | Month of observation | Integer |
+| Day      | Day of observation   | Integer |
+
+## Loading the Dataset
+
+```{r}
+data("airquality")
+
+head(airquality)
+```
+
+## Data Understanding
+
+```{r pressure, echo=FALSE}
+dim(airquality)
+```
+
+The dataset contains **153 observations and 6 variables**.
+
+## Column Names
+
+```{r}
+names(airquality)
+
+```
+
+## Dataset Structure
+
+```{r}
+str(airquality)
+```
+
+## Summary Statistics
+
+```{r}
+summary(airquality)
+
+```
+
+## Initial Observations
+
+- The dataset contains measurements for ozone, solar radiation, wind, temperature, month, and day.
+
+- Ozone and solar radiation contain missing observations.
+
+- Temperature, wind speed, month, and day are available as numerical variables.
+
+# Data Quality
+
+Before performing analysis, the quality of the dataset was investigated.
+
+Missing Values
+
+```{r}
+
+colSums(is.na(airquality))
+```
+
+The original dataset contains:
+
+- 37 missing values in Ozone
+
+- 7 missing values in Solar.R
+
+## Complete Cases
+
+```{r}
+sum(!complete.cases(airquality))
+```
+
+There are 42 observations containing at least one missing value.
+
+## Duplicate Observations
+
+```{r}
+sum(duplicated(airquality))
+```
+
+Duplicate observations were checked before cleaning the data.
+
+## Data Quality Observation
+
+Missing values were found mainly in the `Ozone` and `Solar.R` variables. Therefore, missing-data handling was required before further analysis.
+
+# Data Cleaning
+
+The raw dataset was preserved, and a separate cleaned dataset was created.
+
+```{r setup, include=FALSE}
+airquality_clean <- airquality 
+airquality_clean$Ozone[ is.na(airquality_clean$Ozone) ] <- median(airquality_clean$Ozone, na.rm = TRUE) 
+
+airquality_clean$Solar.R[ is.na(airquality_clean$Solar.R) ] <- median(airquality_clean$Solar.R, na.rm = TRUE)
+```
+
+The median values used for imputation were:
+
+- Ozone median = **31.5**
+
+- Solar.R median = **205**
+
+## Checking Missing Values After Cleaning
+
+```{r}
+colSums(is.na(airquality_clean))
+```
+
+After the cleaning process, the dataset contains no missing values.
+
+```{r}
+summary(airquality_clean)
+```
+
+## Cleaning Observation
+
+Median imputation was used to replace missing values while keeping the observations available for further analysis.
+
+# Exploratory Data Analysis
+
+Exploratory Data Analysis was performed to understand the distribution of ozone and its relationships with environmental variables.
+
+## Distribution of Ozone
+
+```{r}
+hist(airquality_clean$Ozone,
+     breaks = 10,
+     main = "DISTRIBUTION OF OZONE",
+     xlab = "Ozone (ppb)",
+     ylab = "Frequency",
+     col = "darkblue",  )
+```
+
+# Observation:
+
+The distribution of Ozone appears right-skewed.
+
+Most Ozone values are concentrated around 0 to 50 ppb.
+
+The histogram does not clearly show the presence of extreme values;
+
+potential outliers will be investigated using a boxplot.
+
+# **Ozone Boxplot**
+
+```{r}
+boxplot(airquality_clean$Ozone,
+        main = "Check potential outliers",
+        xlab = NULL,
+        ylab = "Ozone (ppb)",
+        col = "darkred")
+```
+
+# Observation:
+
+The median Ozone value is approximately 30 to 35 ppb.
+
+There are potential outliers roughly between 100 and 150 ppb.
+
+The potential outliers are mainly on the right side of the distribution.
+
+## Ozone vs Temperature
+
+```{r}
+plot(airquality_clean$Temp,
+     airquality_clean$Ozone,
+     main = "Relationship between Ozone & Temperature",
+     xlab = "Temperature",
+     ylab = "Ozone",
+     col = "darkgreen",
+     lwd = 2
+)
+```
+
+# Observation:
+
+There appears to be a positive relationship between Temperature and Ozone.
+
+As Temperature increases, Ozone generally tends to increase.
+
+The relationship is not perfectly linear because the points are widely scattered.
+
+A few observations have unusually high Ozone values at higher temperatures.
+
+# Ozone vs Wind
+
+```{r}
+
+plot(airquality_clean$Wind,
+     airquality_clean$Ozone,
+     main = "Relattonship between Wind & Ozone",
+     xlab = "wind (mph)",
+     ylab = "Ozone ",
+     col = "hotpink",
+     lwd = 2
+)
+
+```
+
+# Observation:
+
+There appears to be a negative relationship between Wind and Ozone.
+
+As Wind Speed increases, Ozone generally tends to decrease.
+
+The relationship appears fairly noticeable, although the points are scattered.
+
+Some unusually high Ozone values occur at relatively low wind speeds.
+
+# Ozone vs Solar Radiation
+
+```{r}
+plot(airquality_clean$Solar.R,
+     airquality_clean$Ozone,
+     main = "Relationship between Solar Radiation & Ozone",
+     xlab = "solar radiation",
+     ylab = "Ozone",
+     col = "tomato",
+     lwd = 2
+     
+)
+```
+
+# Observation:
+
+There appears to be a positive relationship between Solar Radiation and Ozone.
+
+As Solar Radiation increases, Ozone generally tends to increase.
+
+The relationship is fairly scattered, so it does not appear to be very strong.
+
+Some unusually high Ozone values occur at higher Solar Radiation levels.
+
+# Correlation Analysis
+
+Correlation was used to measure the strength and direction of relationships between ozone and the environmental variables.
+
+```{r}
+cor(airquality_clean$Ozone, airquality_clean$Temp)
+cor(airquality_clean$Ozone, airquality_clean$Wind)
+cor(airquality_clean$Solar.R, airquality_clean$Ozone)
+
+```
+
+# Observation:
+
+Temperature has a moderate positive correlation with Ozone (r = 0.6008).
+
+Wind has a moderate negative correlation with Ozone (r = -0.5319).
+
+Solar Radiation has a weak positive correlation with Ozone (r = 0.2955).
+
+These correlation results support the patterns observed
+
+in the scatter plots.
+
+The calculated correlations were:
+
+| Variables               | Correlation |
+|-------------------------|-------------|
+| Ozone – Temperature     | 0.6008      |
+| Ozone – Wind            | -0.5319     |
+| Ozone – Solar Radiation | 0.2955      |
+
+## Observation
+
+Temperature has the strongest positive correlation with ozone among the three variables.
+
+Wind has a moderate negative relationship with ozone.
+
+Solar radiation has a weaker positive relationship with ozone.
+
+# Statistical Analysis
+
+## Simple Linear Regression
+
+Simple regression was initially used to investigate individual relationships.
+
+## Ozone and Temperature
+
+```{r}
+model_temp <- lm(Ozone ~ Temp,data = airquality_clean)
+model_temp
+
+summary(model_temp)
+
+```
+
+# Observation:
+
+Temperature has a statistically significant positive relationship
+
+with Ozone (p \< 2e-16).
+
+The regression coefficient for Temperature is 1.8443,
+
+meaning a 1°F increase in temperature is associated with an
+
+estimated 1.8443 ppb increase in Ozone.
+
+The model explains approximately 36.1% of the variation in Ozone (R² = 0.361).
+
+## Ozone and Wind
+
+```{r}
+model_Wind <- lm(Ozone ~ Wind,data = airquality_clean)
+model_Wind
+
+summary(model_Wind)
+
+```
+
+# Observation:
+
+Wind has a significant negative relationship with Ozone
+
+(coefficient = -4.3866, p \< 0.05).
+
+For every 1-unit increase in Wind, the model predicts
+
+an average decrease of approximately 4.39 ppb in Ozone.
+
+The model explains approximately 28.29% of the variation
+
+in Ozone (R² = 0.2829).
+
+## Ozone and Solar.R
+
+```{r}
+
+model_Solar.R <- lm(Ozone ~ Solar.R,data = airquality_clean)
+model_Solar.R
+
+summary(model_Solar.R)
+
+```
+
+# Observation:
+
+Solar Radiation has a significant positive relationship with Ozone
+
+(coefficient = 0.0975, p \< 0.05).
+
+For every 1-unit increase in Solar.R, the model predicts
+
+an average increase of approximately 0.0975 ppb in Ozone.
+
+The model explains approximately 8.73% of the variation
+
+in Ozone (R² = 0.0873).
+
+## Multiple Linear Regression
+
+```{r}
+
+model_mul_regression <- lm(
+  Ozone ~ Temp + Wind + Solar.R,
+  data = airquality_clean
+)
+
+model_mul_regression
+
+summary(model_mul_regression)
+```
+
+# Multiple Linear Regression Observation:
+
+Temperature, Wind, and Solar.R all have statistically significant
+
+relationships with Ozone when considered together (p \< 0.05).
+
+Temperature has a positive coefficient (1.23295), while Wind has
+
+a negative coefficient (-2.78709) and Solar.R has a positive
+
+coefficient (0.05696).
+
+The model explains approximately 47.21% of the variation in Ozone
+
+(R² = 0.4721).
+
+The overall regression model is statistically significant
+
+(F-test p-value \< 2.2e-16).
+
+The model coefficients were approximately:
+
+| Variable        | Coefficient |
+|-----------------|-------------|
+| Intercept       | -39.35406   |
+| Temperature     | 1.23295     |
+| Wind            | -2.78709    |
+| Solar Radiation | 0.05696     |
+
+The R² value was approximately **0.4721**.
+
+The predictors were statistically significant in the model.
+
+## Interpretation
+
+The temperature coefficient is positive, indicating that ozone tends to increase as temperature increases when the other predictors are held constant.
+
+The wind coefficient is negative, indicating that higher wind speed is associated with lower ozone concentration.
+
+The solar-radiation coefficient is positive, indicating a positive association with ozone.
+
+The model explains approximately **47.21% of the variation in ozone concentration**.
+
+# Time Analysis
+
+The dataset contains `Month` and `Day`, allowing ozone observations to be examined over time.
+
+```{r}
+ozone_ts <- ts(airquality_clean$Ozone,
+               start = c(1973, 1),
+               frequency = 365)
+
+ozone_ts
+
+start(ozone_ts)
+end(ozone_ts)
+frequency(ozone_ts)
+```
+
+# Observation:
+
+The Ozone values were converted into a time-series object using ts().
+
+Since the data contains daily observations, a frequency of 365 was used
+
+to represent the daily time structure of the year 1973.
+
+The time series contains 153 observations, covering the available
+
+May–September 1973 data.
+
+# Plot ozone_ts
+
+```{r}
+plot(ozone_ts,
+     main = "Daily Obserbations of Ozone",
+     xlab = "Evryday Obserbation",
+     ylab = "Ozone (ppd)",
+     col = "tomato",
+     lwd = 2)
+
+```
+
+# Observation:
+
+The time-series plot shows that Ozone varies considerably across
+
+the observation period. Most values are relatively low, but several
+
+high spikes occur, with the highest value around 168 ppb.
+
+No clear continuous increasing or decreasing trend is visible.
+
+Ozone fluctuates considerably, with higher values appearing in
+
+some middle portions of the observation period.
+
+# Moving Average
+
+A moving average was used to smooth short-term fluctuations and make the overall pattern easier to observe.
+
+```{r}
+moving_average <- stats::filter(ozone_ts,rep(1/7,7),sides = 2)
+moving_average
+```
+
+# Observation:
+
+The first and last three observations contain NA because a 7-day
+
+centered moving average requires three observations before and
+
+three observations after each point. These observations are not
+
+available at the beginning and end of the dataset.
+
+```{r}
+plot(ozone_ts,
+     main = "Ozone with 7-Day Moving Average",
+     xlab = "Days",
+     ylab = "Ozone (ppb)",
+     col = "tomato",
+     lwd = 1)
+
+lines(moving_average,
+      col = "skyblue",
+      lwd = 2)
+
+```
+
+# Observation:
+
+The 7-day moving average smooths the daily fluctuations in Ozone.
+
+Compared with the original Ozone values, the moving average makes
+
+the broader pattern easier to see, while reducing the effect of
+
+short-term spikes.
+
+# Anomaly Detection
+
+Anomaly detection was performed to identify ozone observations that are unusually high or low.
+
+## IQR Method
+
+```{r}
+# Find Q1 and Q3
+Q1 <- quantile(airquality_clean$Ozone, 0.25)
+Q3 <- quantile(airquality_clean$Ozone, 0.75)
+
+# Calculate IQR
+IQR_Ozone <- Q3 - Q1
+
+IQR_Ozone
+
+# Lower and upper boundaries
+lower_bound <- Q1 - 1.5 * IQR_Ozone
+upper_bound <- Q3 + 1.5 * IQR_Ozone
+
+lower_bound
+upper_bound
+```
+
+The calculated boundaries were approximately:
+
+- Lower boundary = **-16.5**
+
+- Upper boundary = **83.5**
+
+# Detecting Anomalies
+
+```{r}
+ozone_anomalies <- airquality_clean[
+  airquality_clean$Ozone < lower_bound |
+    airquality_clean$Ozone > upper_bound,
+]
+
+ozone_anomalies
+
+```
+
+# Observation:
+
+Using the IQR method, 15 Ozone observations were identified as unusually high.
+
+The upper boundary is 83.5 ppb, while the lower boundary is -16.5 ppb.
+
+All detected anomalies are above the upper boundary, ranging from 84 to 168 ppb.
+
+## Visualize the anomalies
+
+```{r}
+boxplot(airquality_clean$Ozone,
+        main = "Ozone Anomalies",
+        ylab = "Ozone (ppb)",
+        col = "tomato")
+
+```
+
+# Observation:
+
+The boxplot shows several Ozone observations above the upper whisker.
+
+These points represent unusually high Ozone values and support the
+
+anomalies identified using the IQR method.
+
+```{r}
+
+
+table(ozone_anomalies$Month)
+max(ozone_anomalies$Ozone)
+ozone_anomalies[which.max(ozone_anomalies$Ozone), ]
+```
+
+# Final Observation:
+
+Most Ozone anomalies occurred in August (7 observations),
+
+followed by July (5 observations). May had 1 anomaly and
+
+September had 2 anomalies. The highest Ozone value was
+
+168 ppb, recorded on August 25.
+
+# Feature Engineering
+
+Feature engineering was used to create additional information from existing variables.
+
+## Create a proper Date
+
+```{r}
+
+dates_text <- paste(1973, airquality_clean$Month,
+                    airquality_clean$Day, sep = "-")
+
+class(dates_text)
+
+
+dates <- as.Date(dates_text)
+
+class(dates)
+
+```
+
+# Observation :
+
+The Month and Day variables were separate, so they were combined
+
+with the year 1973 to create complete date values.
+
+paste() combined Year, Month, and Day into date strings such as
+
+"1973-5-1". These values initially had the character data type.
+
+as.Date() converted the character date strings into actual Date
+
+objects, which can be used for time-based analysis.
+
+## Create Temperature Category
+
+```{r}
+airquality_clean$Temp_Category <- cut(
+  airquality_clean$Temp,
+  breaks = c(-Inf,70,80,Inf),
+  labels = c("Low","Medium","High"),
+  right = FALSE
+)
+
+table(airquality_clean$Temp_Category)
+```
+
+# Observation:
+
+Most observations are in the High temperature category (73 observations).
+
+# Create Wind Category
+
+```{r}
+airquality_clean$Wind_Category <- cut(
+  airquality_clean$Wind,
+  breaks = c(-Inf, 10, 15, Inf),
+  labels = c("Low Wind", "Medium Wind", "High Wind"),
+  right = FALSE
+)
+
+table(airquality_clean$Wind_Category)
+```
+
+# Observation:
+
+Most observations are in the High temperature category (73 observations).
+
+## Interaction Feature
+
+An interaction feature between temperature and wind was created:
+
+```{r}
+airquality_clean$Temp_Wind <- airquality_clean$Temp *
+  airquality_clean$Wind
+
+
+
+str(airquality_clean)
+head(airquality_clean)
+summary(airquality_clean)
+```
+
+# Observation:
+
+Temp_Wind combines Temperature and Wind into one interaction feature.
+
+It represents how the effect of temperature and wind together may
+
+influence Ozone levels.
+
+# Modeling
+
+The cleaned dataset was divided into training and testing data for prediction.
+
+### Prepare modeling data
+
+```{r}
+model_data <- airquality_clean[, c("Ozone", "Temp", "Wind", "Solar.R", "Temp_Wind")]
+head(model_data)
+colSums(is.na(model_data))
+
+```
+
+## Train/Test Split
+
+```{r}
+set.seed(123)
+
+n <- nrow(model_data)
+
+train_index <- sample(1:n, size = 0.8 * n)
+
+train_data <- model_data[train_index, ]
+test_data  <- model_data[-train_index, ]
+
+nrow(train_data)
+nrow(test_data)
+```
+
+# Observation:
+
+The dataset was randomly divided into 80% training data and 20% testing data.
+
+The training data will be used to build the model, while the testing data
+
+will be used later to evaluate its predictions.
+
+## Build the Multiple Linear Regression Model
+
+```{r}
+
+model1 <- lm(Ozone ~ Temp + Wind + Solar.R,
+             data = train_data)
+
+
+summary(model1)
+```
+
+# Observation:
+
+The multiple linear regression model explains about 45.73% of the variation
+
+in Ozone. Temperature has a significant positive effect on Ozone, while Wind
+
+has a significant negative effect and Solar.R has a significant positive effect.
+
+Overall, the model is statistically significant (p \< 0.001).
+
+## Make Predictions
+
+```{r}
+predictions <- predict(model1, newdata = test_data)
+head(predictions)
+```
+
+# Observation:
+
+The model generated Ozone predictions for the unseen test data.
+
+The predicted values vary considerably, with some predictions close to
+
+the expected Ozone range while others are negative, such as -14.18.
+
+This shows that the model's predictions will need to be evaluated further.
+
+### Compare Actual vs Predicted Ozone
+
+```{r}
+comparison <- data.frame(
+  Actual = test_data$Ozone,
+  Predicted = predictions
+)
+
+head(comparison)
+```
+
+# Observation:
+
+The predicted Ozone values are sometimes close to the actual values,
+
+but there are also large differences. For example, an actual value of
+
+7 was predicted as 44.08, and an actual value of 6 was predicted as
+
+-14.18. This indicates that the model does not predict every observation accurately.
+
+## Model 2
+
+```{r}
+Ozone ~ Temp + Wind + Solar.R + Temp_Wind
+
+model2 <- lm(Ozone ~ Temp + Wind + Solar.R + Temp_Wind,
+             data = train_data)
+
+summary(model2)
+```
+
+# Observation:
+
+The improved model explains 56.24% of the variation in Ozone,
+
+increasing the R-squared from 45.73% in model1 to 56.24% in model2.
+
+Temp_Wind is statistically significant (p \< 0.001), indicating that
+
+the interaction between Temperature and Wind contributes meaningfully
+
+to predicting Ozone. Overall, model2 is statistically significant.
+
+# Predictions from Model 1
+
+```{r}
+pred_model1 <- predict(model1, newdata = test_data)
+```
+
+# Predictions from Model 2
+
+```{r}
+pred_model2 <- predict(model2, newdata = test_data)
+```
+
+```{r}
+model_results <- data.frame(
+  Actual = test_data$Ozone,
+  Model1_Predicted = pred_model1,
+  Model2_Predicted = pred_model2
+)
+
+head(model_results)
+
+```
+
+# Observation
+
+Both Model 1 and Model 2 generate predictions that differ from the actual Ozone values.
+
+Model 2 generally gives more reasonable predictions for these test observations.
+
+Model 1 has some large errors, such as predicting -14.18 when the actual value is 6.
+
+Model 2 also has errors, but its predictions are generally closer to the actual values.
+
+Therefore, Model 2 appears to perform better than Model 1 on these sample test observations.
+
+# Model Evaluation Code
+
+| Metric | Complete one-line definition | Better value |
+|----|----|----|
+| **MAE (Mean Absolute Error)** | Measures the **average absolute difference between the actual Ozone values and the predicted Ozone values**, showing how far predictions are from the real values on average. | **Lower** |
+| **RMSE (Root Mean Square Error)** | Measures the **square root of the average squared difference between actual and predicted Ozone values**, giving **more importance to large prediction errors**. | **Lower** |
+| **R² (R-squared)** | Measures the **proportion of variation in the actual Ozone values that is explained by the model's predictions**, indicating how well the model fits the data. | **Higher** |
+
+# MAE
+
+```{r}
+
+mae_model1 <- mean(abs(model_results$Actual - model_results$Model1_Predicted))
+mae_model2 <- mean(abs(model_results$Actual - model_results$Model2_Predicted))
+```
+
+# RMSE
+
+```{r}
+
+rmse_model1 <- sqrt(mean((model_results$Actual - model_results$Model1_Predicted)^2))
+rmse_model2 <- sqrt(mean((model_results$Actual - model_results$Model2_Predicted)^2))
+```
+
+# R-squared
+
+```{r}
+
+r2_model1 <- 1 - sum((model_results$Actual - model_results$Model1_Predicted)^2) /
+  sum((model_results$Actual - mean(model_results$Actual))^2)
+
+r2_model2 <- 1 - sum((model_results$Actual - model_results$Model2_Predicted)^2) /
+  sum((model_results$Actual - mean(model_results$Actual))^2)
+
+```
+
+```{r}
+model_metrics <- data.frame(
+  Model = c("Model 1", "Model 2"),
+  MAE = c(mae_model1, mae_model2),
+  RMSE = c(rmse_model1, rmse_model2),
+  R2 = c(r2_model1, r2_model2)
+)
+model_metrics
+```
+
+# Observation
+
+Model 2 performs better than Model 1 because it has a lower MAE (13.69 vs 14.38)
+
+and lower RMSE (18.90 vs 20.29), indicating smaller prediction errors.
+
+Model 2 also has a higher R² (0.586 vs 0.523), meaning it explains more
+
+variation in Ozone values. Therefore, Model 2 is the better-performing model.
+
+# Compare the Models
+
+```{r}
+if (mae_model2 < mae_model1 &&
+    rmse_model2 < rmse_model1 &&
+    r2_model2 > r2_model1) {
+  
+  print("Model 2 performs better than Model 1.")
+  
+} else {
+  
+  print("Model 1 performs better than Model 2.")
+}
+
+```
+
+# Final Observation
+
+Model 2 performs better than Model 1 on the test data.
+
+It has lower MAE and RMSE, indicating smaller prediction errors,
+
+and a higher R², indicating that it explains more variation in Ozone.
+
+Therefore, Model 2 is selected as the better-performing model.
+
+# Final Plot: Actual vs Predicted Ozone
+
+```{r}
+plot(
+  model_results$Actual,
+  model_results$Model1_Predicted,
+  main = "Actual vs Predicted Ozone",
+  xlab = "Actual Ozone",
+  ylab = "Predicted Ozone",
+  pch = 19,
+  col = "skyblue",
+  lwd = 2
+)
+
+points(
+  model_results$Actual,
+  model_results$Model2_Predicted,
+  pch = 19,
+  col = "tomato",
+  lwd = 02
+)
+
+abline(0, 1, lty = 2)
+
+legend(
+  "topleft",
+  legend = c("Model 1", "Model 2", "Perfect Prediction"),
+  pch = c(19, 19, NA),
+  lty = c(NA, NA, 2),
+  col = c("skyblue", "tomato", "black")
+)
+```
+
+# Final Observation
+
+The Actual vs Predicted plot shows that Model 2's predictions are generally
+
+closer to the perfect prediction line than Model 1.
+
+This visually supports the evaluation results, where Model 2 has lower MAE
+
+and RMSE and higher R². Therefore, Model 2 provides better Ozone predictions
+
+for the test data from the cleaned airquality dataset.
+
+# Final Findings
+
+The major findings from the project are:
+
+1.  The dataset contains 153 observations and 6 original variables.
+
+2.  Missing values were present in Ozone and Solar Radiation.
+
+3.  Median imputation was used to handle missing values.
+
+4.  Temperature showed the strongest positive correlation with ozone.
+
+5.  Wind showed a moderate negative relationship with ozone.
+
+6.  Multiple regression explained approximately 47.21% of ozone variation in the initial statistical model.
+
+7.  Ozone showed substantial fluctuations over the observation period.
+
+8.  Several unusually high ozone observations were detected using the IQR method.
+
+9.  Anomalies were retained rather than automatically removed because they may represent genuine environmental observations.
+
+10. The temperature-wind interaction feature improved model performance.
+
+11. Model 2 achieved lower MAE and RMSE and higher R² than Model 1.
+
+# Conclusion
+
+This project demonstrated a complete data science workflow using R and the `airquality` dataset.
+
+The analysis began with understanding the dataset and identifying data-quality issues. Missing values were handled using median imputation, after which exploratory analysis was performed to investigate ozone distributions and relationships with environmental variables.
+
+Statistical analysis showed that temperature had a strong positive relationship with ozone, while wind had a negative relationship. Multiple linear regression was then used to model ozone concentration using environmental variables.
+
+Time-based analysis was used to investigate ozone fluctuations, while anomaly detection identified unusually high ozone observations. Feature engineering introduced an interaction between temperature and wind.
+
+Finally, two predictive models were compared using MAE, RMSE, and R². The second model performed better, demonstrating that the engineered interaction feature provided useful additional information for ozone prediction.
+
+Overall, the project demonstrates how R can be used to move from raw environmental data to data cleaning, analysis, interpretation, feature engineering, and predictive modeling.
